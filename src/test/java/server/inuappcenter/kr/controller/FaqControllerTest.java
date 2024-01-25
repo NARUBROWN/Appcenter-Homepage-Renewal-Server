@@ -12,21 +12,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import server.inuappcenter.kr.common.data.dto.CommonResponseDto;
-import server.inuappcenter.kr.data.domain.board.FaqBoard;
+import server.inuappcenter.kr.controller.boardController.FaqController;
 import server.inuappcenter.kr.data.dto.request.FaqBoardRequestDto;
 import server.inuappcenter.kr.data.dto.response.FaqBoardResponseDto;
 import server.inuappcenter.kr.service.boardService.BoardService;
-import server.inuappcenter.kr.service.boardService.FaqBoardService;
+import server.inuappcenter.kr.service.boardService.impl.FaqBoardServiceImpl;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,7 +42,7 @@ public class FaqControllerTest {
     BoardService boardService;
 
     @MockBean
-    FaqBoardService faqBoardService;
+    FaqBoardServiceImpl faqBoardServiceImpl;
 
     private final Long givenId = 1L;
     FaqBoardRequestDto givenDto = new FaqBoardRequestDto("서버", "질문입니다.", "답변입니다.");

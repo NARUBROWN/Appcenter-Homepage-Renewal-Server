@@ -1,9 +1,9 @@
-package server.inuappcenter.kr.controller;
+package server.inuappcenter.kr.controller.boardController;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,26 +13,29 @@ import server.inuappcenter.kr.common.data.dto.CommonResponseDto;
 import server.inuappcenter.kr.data.dto.request.PhotoBoardRequestDto;
 import server.inuappcenter.kr.data.dto.response.BoardResponseDto;
 import server.inuappcenter.kr.exception.customExceptions.CustomModelAttributeException;
+import server.inuappcenter.kr.service.boardService.AdditionalBoardService;
 import server.inuappcenter.kr.service.boardService.BoardService;
-import server.inuappcenter.kr.service.boardService.PhotoBoardService;
 
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/photo-board")
-@Slf4j
+@Tag(name = "[Photo] 사진 게시판")
 public class PhotoBoardController {
     private final BoardService boardService;
-    private final PhotoBoardService photoBoardService;
+    private final AdditionalBoardService additionalBoardService;
+
+    public PhotoBoardController(BoardService boardService, @Qualifier(value = "PhotoBoardServiceImpl") AdditionalBoardService additionalBoardService) {
+        this.boardService = boardService;
+        this.additionalBoardService = additionalBoardService;
+    }
 
     @Operation(summary = "게시글 (1개) 가져오기", description = "가져올 게시글의 id를 입력해주세요")
     @Parameter(name = "id", description = "게시판 id")
     @GetMapping("/public/{id}")
     public ResponseEntity<BoardResponseDto> getBoard(final @PathVariable("id") Long id) {
-        log.info("사용자가 id: " + id + "을(를) 가진 PhotoBoard를 요청했습니다.");
         return ResponseEntity.status(HttpStatus.OK).body(boardService.findBoard(id));
     }
 
@@ -43,8 +46,6 @@ public class PhotoBoardController {
         if(bindingResult.hasErrors()) {
             throw new CustomModelAttributeException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         } else {
-            log.info("사용자가 PhotoBoard를 저장하도록 요청했습니다.\n" +
-                    "PhotoBoardRequestDto의 내용: "+ photoBoardRequestDto.toString());
             return ResponseEntity.status(HttpStatus.CREATED).body(boardService.saveBoard(photoBoardRequestDto));
         }
     }
@@ -59,26 +60,20 @@ public class PhotoBoardController {
         if(bindingResult.hasErrors()) {
             throw new CustomModelAttributeException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
-        log.info("사용자가 id: "+ board_id + "을(를) 가진 PhotoBoard를 수정하도록 요청했습니다.\n" +
-                "PhotoBoardRequestDto의 내용: "+ photoBoardRequestDto.toString());
-        CommonResponseDto commonResponseDto = boardService.updateBoard(board_id, photo_ids, photoBoardRequestDto);
-        return ResponseEntity.status(HttpStatus.OK).body(commonResponseDto);
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.updateBoard(board_id, photo_ids, photoBoardRequestDto));
     }
 
     @Operation(summary = "게시글 (1개) 삭제하기", description = "삭제할 게시글의 id를 입력해주세요")
     @Parameter(name = "id", description = "게시판 id")
     @DeleteMapping("/{id}")
     public ResponseEntity<CommonResponseDto> deleteBoard(final @PathVariable("id") Long id) {
-        log.info("사용자가 id: " + id + "을(를) 가진 PhotoBoard를 삭제하도록 요청했습니다.");
-        CommonResponseDto result = boardService.deleteBoard(id);
-        return ResponseEntity.status(HttpStatus.OK).body(result);
+        return ResponseEntity.status(HttpStatus.OK).body(boardService.deleteBoard(id));
     }
 
     @Operation(summary = "사진 글 (전체) 조회", description = "사진 글을 모두 반환합니다.")
     @GetMapping("/public/all-boards-contents")
     public ResponseEntity<List<BoardResponseDto>> findAllBoard() {
-        log.info("사용자가 전체 PhotoBoard 목록을 요청했습니다.");
-        return ResponseEntity.status(HttpStatus.OK).body(photoBoardService.findPhotoBoardList());
+        return ResponseEntity.status(HttpStatus.OK).body(additionalBoardService.findBoardList());
     }
 
 }
